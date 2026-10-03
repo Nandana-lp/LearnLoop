@@ -1,0 +1,26 @@
+# Uploaded user files
+uploads/*
+!uploads/.gitkeep
+
+# Environment / local configuration
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+
+# PHP cache
+.phpunit.result.cache
+
+# XAMPP / local files
+xampp/

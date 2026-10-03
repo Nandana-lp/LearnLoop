@@ -1,0 +1,11 @@
+<?php
+require_once '../includes/auth.php'; require_role('student'); require_once '../config/db.php'; require_once '../includes/academic.php';
+$page_title='Course Notes'; $user=$_SESSION['username'];
+$st=$conn->prepare("SELECT batch_id FROM tbl_student WHERE username=? AND approved=1");$st->bind_param('s',$user);$st->execute();$student=$st->get_result()->fetch_assoc();$batchId=(int)($student['batch_id']??0);$academic=academic_context($conn,$user);$currentSemester=(int)($academic['current_semester']??0);
+$notes=[];
+if($batchId){$st=$conn->prepare("SELECT n.*,t.name teacher_name,b.batch_name FROM tbl_notes n JOIN tbl_trs t ON t.username=n.teacher_username JOIN tbl_batches b ON b.id=n.batch_id WHERE n.batch_id=? AND n.semester=? AND t.approved=1 ORDER BY n.uploaded_at DESC");$st->bind_param('ii',$batchId,$currentSemester);$st->execute();$r=$st->get_result();while($x=$r->fetch_assoc())$notes[]=$x;}
+require '../includes/header.php';
+?>
+<div class="glass-hero mb-4"><div><span class="eyebrow-dark">LEARNING MATERIALS</span><h2>Course Notes</h2><p>Notes published for your current semester by your teachers.</p></div><div class="hero-orb"><i class="fa-solid fa-book-open"></i></div></div>
+<div class="glass-card"><div class="d-flex justify-content-between align-items-center"><div><div class="section-kicker">YOUR BATCH</div><h5>Notes Library</h5></div><span class="badge badge-soft"><?php echo count($notes); ?> files</span></div><div class="notes-grid mt-4"><?php if(!$notes): ?><div class="empty">No notes have been published for your batch yet.</div><?php endif; ?><?php foreach($notes as $n): ?><div class="note-card glass-subcard"><div class="note-icon"><i class="fa-solid fa-file-lines"></i></div><span class="context-chip small-chip"><?php echo e($n['batch_name']); ?> · Sem <?php echo e($n['semester']); ?></span><h6><?php echo e($n['title']); ?></h6><p class="small-muted mb-3"><?php echo e($n['subject']); ?> · <?php echo e($n['teacher_name']); ?><br>Uploaded <?php echo e(date('d M Y',strtotime($n['uploaded_at']))); ?></p><a class="btn btn-sm btn-primary" target="_blank" href="../uploads/notes/<?php echo rawurlencode(basename($n['file_path'])); ?>">Open Notes</a></div><?php endforeach; ?></div></div>
+<?php require '../includes/footer.php'; ?>
